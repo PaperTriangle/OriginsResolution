@@ -118,6 +118,16 @@ function void fn051d82()
 	fn051e12()
 }
 
+// Make sure the screen renders properly if the player looks up at the end of CNZ1.
+// This function also corrects a palette cycle bug in its D.A. Garden Edition implementation,
+// but that is beyond the scope of this project.
+//# address-hook(0x051e60) end(0x051f30)
+function void fn051e60()
+{
+	base.fn051e60()
+	fillPlaneA_Default(camera.position.x.u16, camera.position.y.u16, getScreenWidth(), getScreenHeight())
+}
+
 // Redraw more of the vacuum tube Knuckles switches around if the screen height is extended
 //# address-hook(0x065cac) end(0x065d14)
 function void fn065cac()
