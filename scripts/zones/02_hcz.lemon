@@ -68,35 +68,14 @@ function void UpdateLevelTiles.HCZ2()
 //# address-hook(0x06aeb6) end(0x06aef8)
 function void fn06aeb6()
 {
-#if STANDALONE
-	// Skip boss in Time Attack
-	if (Game.isTimeAttack())
-	{
-		UnloadObject()
-		return
-	}
-#endif
+	base.fn06aeb6()
 
-	A1 = isMainCharacter(CHARACTER_KNUCKLES) ? 0x06aea6 : 0x06ae96
-	if (InitBoss(0x06aecc))
+	if (objA0.value26 != MUSIC_MAINBOSS)
 		return
 
-	objA0.value26 = MUSIC_MAINBOSS
-	StartBossFight()
-
-#if STANDALONE
-	// Expand the boss area to the right if needed
-	level.bossarea.right = max(level.bossarea.right, level.bossarea.left + getScreenExtend() * 2)
     level.bossarea.top -= getScreenHeightExtend()
     level.bossarea.bottom -= getScreenHeightExtend()
-#endif
 
-	objA0.update_address = 0x06aefe
-	objA0.countdown_callback = 0x06af04
-
-	requestLoadingPatterns(0x6c)		// Boss sprites
-
-	u16[0xfffffc1e] = 0
-
-	loadPaletteLine1(0x06bf0a)
+	if (getScreenWidth() > 400)
+		objA0.position.x.u16 = level.bossarea.left + getScreenWidth()/2
 }
