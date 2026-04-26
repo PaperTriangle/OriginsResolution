@@ -1,5 +1,6 @@
 {
-    "mgz2_bossarea": { "File": "mgz2_bossarea.bmp", "Center": "224,120" },
+   	"mgz2_collapse_scene_grass": { "File": "mgz2_collapse_scene_grass.bmp", "Center": "0,0" },
+	"mgz2_bossarea": { "File": "mgz2_bossarea.bmp", "Center": "224,120" },
     "mgz2_bossarea_3c90": { "File": "mgz2_bossarea.bmp", "Rect": "0,0,96,584", "Center": "80,120" },
     "mgz2_bossarea_3cb0": { "File": "mgz2_bossarea.bmp", "Rect": "96,0,32,584", "Center": "16,120" },
     "mgz2_bossarea_3cd0": { "File": "mgz2_bossarea.bmp", "Rect": "128,0,32,584", "Center": "16,120" },
