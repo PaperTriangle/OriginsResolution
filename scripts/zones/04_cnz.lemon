@@ -163,7 +163,7 @@ function void fn033392()
 	{
 		if ((u8[A1 + 0x2a] & char.flag.ON_OBJECT) == 0)
 		{
-			D0.u16 = objA1.position.x.u16 - s8[A1 + 0x1f] - objA0.position.x.u16 + 0x50
+			D0.u16 = objA1.position.x.u16 - s8[A1 + 0x1f] - objA0.position.x.u16 + 0x40
 			if (D0.u16 < 0xa0)
 			{
 				D0.u16 -= 0x61
