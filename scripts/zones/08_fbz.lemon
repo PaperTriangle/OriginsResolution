@@ -192,54 +192,6 @@ function void fn0530ec()
     Renderer.drawCustomSprite("atex_rectangle", 0x2c90 - 512, 0x0480 - camera.screenshake.offset, 0x37, SPRITE_FLAG_WORLDSPACE | SPRITE_FLAG_PRIO, 0x1001)
 }
 
-//# address-hook(0x05318c) end(0x053232)
-function void fn05318c()
-{
-	camera.background.x.u16 = camera.foreground.x.u16 - u16[0xffffee98] - 0x2600
-	camera.background.y.u16 = camera.foreground.y.u16 + u16[0xffffee9c] - 0x0300
-
-#if STANDALONE
-	// Make sure the player won't see a black sky even if he's very fast here
-	if (s16(camera.background.y.u16) < 0x80)
-	{
-		camera.background.y.u16 = 0x80
-	}
-#endif
-
-	A1 = 0xffffa800
-	A5 = 0x0535b8
-	D0 = (s32(camera.background.x.u16) << 16) >> 4
-	D1 = D0.s32 >> 2
-	D2 = s32[0xffffa9fc] >> 3
-	u32[0xffffa9fc] += 0x8000
-
-	for (u32 k = 0; k < 10; ++k)
-	{
-		D4.u16 = u16[(A5+=2)-2]
-		D0 += D2
-		u16[A1 + D4.u16] = D0 >> 16
-		D0 += D1
-	}
-
-	// Update cloud positions
-	A1 = 0xffffa800
-	A5 = 0xffffeeea		// Start address of vertical scroll offsets
-	D0.s16 = s16(camera.background.y.u16 - camera.screenshake.offset) >> 1
-	D0.s16 = u16[0xffffeeda] - (D0.u16 + camera.screenshake.offset)
-
-	for (u32 k = 0; k < 10; ++k)
-	{
-		D2.u16 = u16[(A5+=2)-2]
-		if (D2.u16 != 0)
-		{
-			A6 = 0xffff0000 + D2.u16
-			s16 dy = s16[(A1+=2)-2]
-			u16[A6 + 0x10] = 0x54 + ((u16[A6 + 0x2e] - dy) & 0x01ff)
-			u16[A6 + 0x14] = 0x74 + ((u16[A6 + 0x30] + D0.u16) & 0xff)
-		}
-	}
-}
-
 // Adjust height for the boss's main body to fall to before arms latch on
 // when the screen height is altered.
 // fn0706ac() would adjust the spawn location, but moving this lower may create pop-in.
