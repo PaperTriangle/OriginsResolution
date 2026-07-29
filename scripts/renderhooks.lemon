@@ -86,7 +86,7 @@ function bool Standalone.onWriteToSpriteTable(s16 px, s16 py, u16 renderQueue)
 function bool Standalone.onDrawVdpSprite(s16 px, s16 py, u8 size, u16 index, u16 renderQueue)
 {
     // AIZ2 bomber propellers must be rendered in front of the bomber when we draw the bomber as an image.
-	if (objA0.update_address == 0x050458 && getScreenWidth() > 400)
+	if (objA0.update_address == 0x050458)
 	{
         // Adjust the propeller renderqueue to draw it in front of the bomber itself
         Renderer.drawVdpSprite(px, py, size, index, 0x9f80)
