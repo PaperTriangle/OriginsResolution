@@ -1,0 +1,7 @@
+{
+	// Sonic & Knuckles Logo (in Blue Spheres mode BG) as a BMP for proper results fading
+	"sklogo_indexed": { "File": "sklogo_indexed.bmp", "Rect": "0,0,96,64", "Center": "48,32" },
+
+	// Perfect text on Green Sphere results, as an image instead of a plane for ultrawide support
+	"results_perfect": { "File": "results_perfect.png", "Rect": "0,0,109,14", "Center": "55,7" }
+}

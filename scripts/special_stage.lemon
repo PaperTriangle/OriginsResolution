@@ -210,3 +210,421 @@ function void fn02e616()
 	base.fn02e616()
 	camera.position.y.u16 -= getScreenHeightExtend()
 }
+
+// Respect screen height when loading elements for Blue Sphere game menu
+//# address-hook(0x04cef8) end(0x04cf80)
+function void fn04cef8()
+{
+	objA0.update_address = 0x04cf82	// Controls scrolling the "noway!" text on the top of the screen, as well as player input
+	u32[0xffffb1bc] = 0x04d03e	// Level text and number
+	u16[0xffffb1bc + 0x14] = 0xc0
+	bluespheregame.menu_flags = 0x01
+	bluespheregame.menu_selection = 0
+	u32[0xffffbd4c] = 0x04d64e	// First bumper cursor
+	u32[0xffffbd96] = 0x04d64e	// Second bumper cursor
+	u8[0xffffbd96 + 0x04] |= render_flag.FLIP_X	// Flip second bumper
+
+	if (bluespheregame.fully_unlocked != 0)
+	{
+		u16[0xffffb1bc + 0x14] = 0xb0
+		u32[0xffffb534] = 0x04d2f4	// Active code entry
+		u16[0xffffb534 + 0x14] = 0x0144 + getScreenHeightExtend()
+		u32[0xffffb8f6] = 0x04d302	// Inactive code display
+		u16[0xffffb8f6 + 0x14] = 0x0144 + getScreenHeightExtend()
+		u32[0xffffbd02] = 0x04d610	// Text "Start"
+		bluespheregame.menu_selection = 1
+	}
+	else
+	{
+		if (bluespheres.blue_remaining == 0 && bluespheres.rings_remaining == 0)
+		{
+			u32[0xffffb8f6] = 0x04d302	// Inactive code display
+			u16[0xffffb8f6 + 0x14] = 0x0144 + getScreenHeightExtend()
+		}
+	}
+}
+
+// START text
+//# address-hook(0x04d610) end(0x04d642)
+function void fn04d610()
+{
+	objA0.mapping_offset = 0x04d7be
+	objA0.sprite_attributes = (sprite_attribute.PRIORITY | (BlueSphereGame.Menu.targetInVRAM >> 5))
+	objA0.position.x.u16 = 0x0120 + getScreenExtend()
+	objA0.position.y.u16 = 0x0128 + getScreenHeightExtend()
+	objA0.sprite_priority = 0x80
+	objA0.box_size.x = 0x14
+	objA0.box_size.y = 0x08
+	objA0.animation.sprite = 0x03	// "START"
+
+	objA0.update_address = 0x04d648
+	fn04d648()
+}
+
+// DIFFICULTY text, number, and stars surrounding number
+//# address-hook(0x04e0a4) end(0x04e110)
+function void fn04e0a4()
+{
+	// "Difficulty" text
+	objA0.mapping_offset = 0x04d7be
+	objA0.sprite_attributes = (sprite_attribute.PRIORITY | (BlueSphereGame.Menu.targetInVRAM >> 5))
+	objA0.position.x.u16 = 0x0120 + getScreenExtend()
+	objA0.position.y.u16 = 0x0140 + getScreenHeightExtend()
+	objA0.sprite_priority = 0x80
+	objA0.box_size.x = 0x28
+	objA0.box_size.y = 0x08
+	objA0.animation.sprite = 0x04	// "DIFFICULTY"
+
+	A1 = A0
+
+	// A1 += 0x4a
+	// objA1.animation.sprite = 0x0a
+	u8[A1 + 0x4a + 0x22] = 0x0a	// Left star sprite
+
+	D2.u16 = 0x0114 + getScreenExtend()
+	D3.u16 = objA0.position.y.u16 + 0x10
+
+	for (u8 i = 0; i < 4; ++i)
+	{
+		// Create the stars and digits
+		//  -> Note that they will get updated in "fn04d1aa"
+		A1 += 0x4a
+		objA1.update_address = 0x04e1aa
+		objA1.position.x.u16 = D2.u16
+		objA1.position.y.u16 = D3.u16
+		D2.u16 += 8
+	}
+
+	objA1.animation.sprite = 0x0b	// Right star sprite
+	u16[A0 + 0x30] = 29		// Half a second (minus one frame)
+	objA0.update_address = 0x04e116
+	fn04e116()
+}
+
+// Use an image for the PERFECT text on the results screen, as plane mappings wrap improperly in ultrawide resolutions.
+// This first function checks if the plane mappings and extra display time for the PERFECT text should be loaded.
+//# address-hook(0x04df04) end(0x04df50)
+function void fn04df04()
+{
+	--u16[A0 + 0x30]
+	if (s16[A0 + 0x30] < 0)
+	{
+		if (bluespheres.rings_remaining == 0)		// this is still valid for Speed Spheres due to the sphere/ring value swap
+		{
+		// We comment out loading the plane mappings for the PERFECT text.
+	//	#if !STANDALONE
+	//		set_status_register(0x2700)
+	//	#endif
+	//		A1 = 0x04de9a	// "PERFECT"
+	//		D2.u16 = 0x049a
+	//		D6.u16 = (sprite_attribute.PRIORITY | (BlueSphereGame.TextTiles.targetInVRAM >> 5))
+	//		fn05b318()
+	//	#if !STANDALONE
+	//		set_status_register(0x2300)
+	//	#endif
+
+			playSound(0xac)
+			u16[A0 + 0x30] = 0x012c
+		}
+		objA0.update_address = 0x04df52
+	}
+
+	if (bluespheres.rings_remaining != 0 && control.pad1.pressed != 0)
+	{
+		global.game_mode = 0x2c	// 0x54 to return to Challenges menu
+	}
+}
+
+// This function shifts the PERFECT text far off the right of the screen by adjusting the horizontal scroll buffer values.
+// We incorporate our image of the text here and only display it when the buffer values indicate the text is within the screen boundaries.
+//# address-hook(0x04df52) end(0x04df84)
+function void fn04df52()
+{
+	if (bluespheres.rings_remaining == 0)
+	{
+		--u16[A0 + 0x30]
+		if (s16[A0 + 0x30] < 0)
+		{
+			global.game_mode = 0x2c	// 0x54 to return to Challenges menu
+		}
+	}
+
+	if (control.pad1.pressed != 0)
+	{
+		global.game_mode = 0x2c		// 0x54 to return to Challenges menu
+	}
+
+	D0.u8 = global.framecounter.low & 0x0f
+	if (D0.u8 == 0)
+	{
+		A1 = 0xffffe120				// address of first row of pixels of PERFECT text in the horizontal scroll buffer (text draws on Plane 1 High/Prio, renderQueue 0x4000)
+		D1 = 0x0f					// number of lines to affect minus 1
+		while (D1.s16 >= 0)
+		{
+			u16[A1] ^= 0x0100		// Alternately shift the row 0x100 (256 pixels) left or right (between 0x0058 and 0x0158), scrolling it off screen.
+									// Problem: horizontal scrolling loops every 512 pixels and A.I.R. supports 496x224. Lines longer than 16 pixels will loop horizontally!
+			A1 += 4					// Move to the next row.
+			--D1.s16				// Decrement number of rows remaining to shift.
+		}
+	}
+
+	// With the plane mappings gone, we use an image in the text's place that shows if the first byte of the horizontal scroll values is appropriate.
+	if (u8[0xffffe120] == 0 && bluespheres.rings_remaining == 0)
+		Renderer.drawCustomSprite("results_perfect", getScreenWidth()/2, 81, 0, 0, 0xa001)
+}
+
+// Make sure menu options spheres start at an appropriate y position if screen height is extended
+//# address-hook(0x04d64e) end(0x04d6b2)
+function void fn04d64e()
+{
+	objA0.mapping_offset = 0x04d926
+	objA0.sprite_attributes = (levelselect.characters == CHARS_KNUCKLES_ALONE) ? (sprite_attribute.PRIORITY | (BlueSphereGame.Bumpers.targetInVRAM >> 5)) : (sprite_attribute.PRIORITY | sprite_attribute.PALETTE.LINE3 | (BlueSphereGame.Bumpers.targetInVRAM >> 5))
+#if STANDALONE
+	if (levelselect.characters == CHARS_TAILS_ALONE)
+		objA0.sprite_attributes = (sprite_attribute.PRIORITY | sprite_attribute.PALETTE.LINE2 | (BlueSphereGame.Bumpers.targetInVRAM >> 5))
+#endif
+
+	objA0.position.x.u16 = ((objA0.render_flags & render_flag.FLIP_X) ? 0x140 : 0x100) + getScreenExtend()
+	objA0.position.y.u16 = (bluespheregame.fully_unlocked == 0) ? 0xbe : 0x0126 + getScreenHeightExtend()
+	u32[A0 + 0x30] = (objA0.render_flags & render_flag.FLIP_X) ? 0x04d7b2 : 0x04d7a6
+	objA0.sprite_priority = 0
+	objA0.box_size.x = 0x08
+	objA0.box_size.y = 0x08
+
+	objA0.update_address = 0x04d6b8
+	fn04d6b8()
+}
+
+// Adjust menu option spheres target positions for START and CODE options.
+//# address-hook(0x04d6b8) end(0x04d7a0)
+function void fn04d6b8()
+{
+#if STANDALONE
+	// Do the following only once in total, i.e. only for the right object
+	if (objA0.render_flags & render_flag.FLIP_X)
+	{
+		if (levelselect.characters == CHARS_TAILS_ALONE)
+		{
+			// Manipulate the palette for Tails
+			BlueSphereGame.applyTailsPalette(0xfffffc00)
+		}
+
+		// Render the BG logo in the right colors again
+		Renderer.drawCustomSprite("sklogo", getScreenWidth() / 2, 40 - scrolloffset.y.planeB, 0x00, 0, 0x1700)
+	}
+#endif
+
+	if (bluespheregame.fully_unlocked != 0)
+	{
+		A1 = u32[A0 + 0x30]
+		D0 = bluespheregame.menu_selection * 4
+		D2.u16 = u16[A1 + D0.u16] + getScreenExtend()
+		D3.u16 = u16[A1 + D0.u16 + 2]
+		if (bluespheregame.menu_selection > 0)
+			D3.u16 += getScreenHeightExtend()	// aim lower if using extended screen height
+
+		// Update velocity-x
+		bool skipPart = false
+		if (D2.u16 == objA0.position.x.u16)
+		{
+			D0.u16 = objA0.velocity.x + 0x80
+			if (D0.u16 <= 0x0100)
+			{
+				D1 = 0
+				objA0.velocity.x = D1.u16
+				skipPart = true
+			}
+		}
+
+		if (!skipPart)
+		{
+			D1.u16 = 0x40
+			if (D2.s16 < s16(objA0.position.x.u16))
+			{
+				D1.s16 = -D1.s16
+				if (objA0.velocity.x >= 0)
+				{
+					D1.u16 *= 4
+				}
+			}
+			else
+			{
+				if (objA0.velocity.x < 0)
+				{
+					D1.u16 *= 4
+				}
+			}
+		}
+		objA0.velocity.x += D1.u16
+
+		// Update velocity-y
+		skipPart = false
+		if (D3.u16 == objA0.position.y.u16)
+		{
+			D0.u16 = objA0.velocity.y + 0x0100
+			if (D0.u16 <= 0x0200)
+			{
+				D1 = 0
+				objA0.velocity.y = D1.u16
+				skipPart = true
+			}
+		}
+
+		if (!skipPart)
+		{
+			D1.u16 = 0x80
+			if (D3.s16 < s16(objA0.position.y.u16))
+			{
+				D1.s16 = -D1.s16
+				if (objA0.velocity.y >= 0)
+				{
+					D1.u16 *= 4
+				}
+			}
+			else
+			{
+				if (objA0.velocity.y < 0)
+				{
+					D1.u16 *= 4
+				}
+			}
+		}
+		objA0.velocity.y += D1.u16
+
+		UpdateMovementStraightSimple()
+	}
+
+	--objA0.animation.timer
+	if (s8(objA0.animation.timer) < 0)
+	{
+		objA0.animation.timer = 2
+		++objA0.animation.sprite
+		objA0.animation.sprite &= 0x07
+	}
+
+#if STANDALONE
+	if (control.pad1.pressed & CONTROL_B || Input.buttonPressed(BUTTON_BACK))
+	{
+		if ((objA0.render_flags & render_flag.FLIP_X) == 0)		// Only consider first of the two objects
+		{
+			if (bluespheregame.menu_selection != 2)
+			{
+				// Back to the main menu
+				playSound(0xad)
+
+				u32 backupA0 = A0
+				FadeOutScreenBlocking()
+				A0 = backupA0
+
+				Game.returnToMainMenu()
+				yieldExecution()
+			}
+			else
+			{
+				fn04d488()
+			}
+		}
+		DrawObject()
+		return
+	}
+#endif
+
+	if (control.pad1.pressed & CONTROL_ABC)
+	{
+		D0.u16 = objA0.sprite_attributes
+		if (D0.u16 == (sprite_attribute.PRIORITY | (BlueSphereGame.Bumpers.targetInVRAM >> 5)))
+		{
+			levelselect.characters = CHARS_SONIC_ALONE
+			objA0.sprite_attributes = (sprite_attribute.PRIORITY | sprite_attribute.PALETTE.LINE3 | (BlueSphereGame.Bumpers.targetInVRAM >> 5))
+		}
+		else
+	#if STANDALONE
+		if (D0.u16 == (sprite_attribute.PRIORITY | sprite_attribute.PALETTE.LINE3 | (BlueSphereGame.Bumpers.targetInVRAM >> 5)))
+		{
+			levelselect.characters = CHARS_TAILS_ALONE
+			objA0.sprite_attributes = (sprite_attribute.PRIORITY | sprite_attribute.PALETTE.LINE2 | (BlueSphereGame.Bumpers.targetInVRAM >> 5))
+		}
+		else
+	#endif
+		{
+			levelselect.characters = CHARS_KNUCKLES_ALONE
+			objA0.sprite_attributes = (sprite_attribute.PRIORITY | (BlueSphereGame.Bumpers.targetInVRAM >> 5))
+		}
+	}
+
+	DrawObject()
+}
+
+// Adjust copyright texts in Blue Spheres menu if screen height is extended
+//# address-hook(0x04da30) end(0x04da5c)
+function void fn04da30()
+{
+	objA0.mapping_offset = 0x04da68
+	objA0.sprite_attributes = (sprite_attribute.PRIORITY | 0x05b2)
+	objA0.position.x.u16 = 0x0180 + getScreenExtend() * 2
+	objA0.position.y.u16 = 0x0152 + getScreenHeightExtend()
+	objA0.sprite_priority = 0x80
+	objA0.box_size.x = 0x2c
+	objA0.box_size.y = 0x04
+
+	objA0.update_address = 0x04da62
+	fn04da62()
+}
+
+//# address-hook(0x04da62) end(0x04da62)
+function void fn04da62()
+{
+	DrawObject()
+
+#if STANDALONE
+	Renderer.drawCustomSprite("title_screen_cr", getScreenWidth() - 92, getScreenHeight() - 18, 0x00, 0, 0x9fff)
+#endif
+}
+
+// Ultrawide resolutions do not draw enough S&K logos in the results screens.
+// Insert call to RenderSKLogoFullBG in function that draws text on relevant screens.
+// This function draws LEVEL, and we add a check to only use the results screens.
+//# address-hook(0x04d09e) end(0x04d0f0)
+function void fn04d09e()
+{
+	if (u32[0xffffb000] != 0x04cf82)	// Scrolling text, which means this is the main menu and not the Perfect screen that shares this game mode
+		RenderSKLogoFullBG()
+	base.fn04d09e()
+}
+
+// Custom function to render the S&K Logo as a background for the end of stage screens
+function void RenderSKLogoFullBG()
+{
+	// Render a black background to cover up some improper plane mapping versions of the S&K logo at ultrawide resolutions.
+	Renderer.setPaletteColorPacked(0xff, 0x0000)	// there is no true non-transparent black color in the palette on the PERFECT results screen, so make one
+	Renderer.drawCustomSprite("atex_rectangle", 0, 0, 0xff, 0, 0x16ff)	// hide areas on far right in widescreen using a black cover-up
+
+	// The palette for the logo is on a different line in the CONGRATULATIONS and perfect celebration screens.
+	// Checking by game mode will render the wrong colors during the transition between screens.
+	// Instead, we check the non-fading palette data to know when the transition has finished.
+	u8 atex = (u16[0xfffffce4] == 0x004e) ? 0x10 : 0
+
+	Renderer.drawCustomSprite("sklogo_indexed", -80, 32, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed",  48, 32, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed", 176, 32, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed", 304, 32, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed", 432, 32, atex, 0, 0x1700)	// Render our custom S&K logo
+
+	Renderer.drawCustomSprite("sklogo_indexed", -16, 96, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed", 112, 96, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed", 240, 96, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed", 368, 96, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed", 496, 96, atex, 0, 0x1700)	// Render our custom S&K logo
+
+	Renderer.drawCustomSprite("sklogo_indexed", -80, 160, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed",  48, 160, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed", 176, 160, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed", 304, 160, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed", 432, 160, atex, 0, 0x1700)	// Render our custom S&K logo
+
+	Renderer.drawCustomSprite("sklogo_indexed", -16, 224, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed", 112, 224, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed", 240, 224, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed", 368, 224, atex, 0, 0x1700)	// Render our custom S&K logo
+	Renderer.drawCustomSprite("sklogo_indexed", 496, 224, atex, 0, 0x1700)	// Render our custom S&K logo
+}
