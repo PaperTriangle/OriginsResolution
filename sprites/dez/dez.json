@@ -1,5 +1,4 @@
 {
-	"bg_dez1_origins": { "File": "dez1_background.bmp", "Center": "216, 0" },
 	"bg_dez1_tower": { "File": "dez1_background_tower.bmp", "Center": "48, 0" },
 	"bg_dez1_distant": { "File": "dez1_background_distant.bmp", "Center": "8, 0" },
 	"bg_dez1_side": { "File": "dez1_background_side.bmp", "Center": "76, 0" },
