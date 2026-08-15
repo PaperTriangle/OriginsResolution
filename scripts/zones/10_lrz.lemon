@@ -53,24 +53,27 @@ function void UpdateLevelScrolling.LRZ1()
 {
 	base.UpdateLevelScrolling.LRZ1()
 
-	// Set and remove rising lava chunks
-	if (camera.position.x.u16 > 0x2400 && u16[0xffff89f6] != 0)
+	if (global.zone_act == 0x0900)
 	{
-		u16[0xffff89f6] = 0
-		u32[0xffff89f8] = 0
-		u32[0xffff89fc] = 0
-		u16[0xffff8a36] = 0
-		u32[0xffff8a38] = 0
-		u32[0xffff8a3c] = 0
-	}
-	else if (u16[0xffff89f6] != 0xfcfc)
-	{
-		u16[0xffff89f6] = 0xfcfc
-		u32[0xffff89f8] = 0xfcfcfcfc
-		u32[0xffff89fc] = 0xfcfcfcfc
-		u16[0xffff8a36] = 0xffff
-		u32[0xffff8a38] = 0xffffffff
-		u32[0xffff8a3c] = 0xffffffff
+		// Set and remove rising lava chunks
+		if (camera.position.x.u16 > 0x2400 && u16[0xffff89f6] != 0)
+		{
+			u16[0xffff89f6] = 0
+			u32[0xffff89f8] = 0
+			u32[0xffff89fc] = 0
+			u16[0xffff8a36] = 0
+			u32[0xffff8a38] = 0
+			u32[0xffff8a3c] = 0
+		}
+		else if (u16[0xffff89f6] != 0xfcfc)
+		{
+			u16[0xffff89f6] = 0xfcfc
+			u32[0xffff89f8] = 0xfcfcfcfc
+			u32[0xffff89fc] = 0xfcfcfcfc
+			u16[0xffff8a36] = 0xffff
+			u32[0xffff8a38] = 0xffffffff
+			u32[0xffff8a3c] = 0xffffffff
+		}
 	}
 }
 
