@@ -53,9 +53,10 @@ function void UpdateLevelScrolling.LRZ1()
 {
 	base.UpdateLevelScrolling.LRZ1()
 
-	if (global.zone_act == 0x0900)
+	// Set and remove rising lava chunks.
+	// Check for Act 1 to prevent layout corruption during the act transition.
+	if (global.act == 0)
 	{
-		// Set and remove rising lava chunks
 		if (camera.position.x.u16 > 0x2400 && u16[0xffff89f6] != 0)
 		{
 			u16[0xffff89f6] = 0
