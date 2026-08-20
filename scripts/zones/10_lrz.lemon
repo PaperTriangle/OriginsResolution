@@ -53,8 +53,13 @@ function void UpdateLevelScrolling.LRZ1()
 {
 	base.UpdateLevelScrolling.LRZ1()
 
+	// Do not run removal code in the boss area itself or at low x positions,
+	// or else this may run for one frame during the act transition and create a layout error in Act 2.
+	if (camera.position.x.u16 < 0x1000 || camera.position.x.u16 > 0x2b00)
+		return
+
 	// Set and remove rising lava chunks
-	if (camera.position.x.u16 > 0x2400 && u16[0xffff89f6] != 0)
+	if (camera.position.x.u16 > 0x2400)
 	{
 		u16[0xffff89f6] = 0
 		u32[0xffff89f8] = 0
