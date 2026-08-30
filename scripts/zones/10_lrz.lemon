@@ -561,13 +561,15 @@ function void fn059fdc()
 //# address-hook(0x059c44) end(0x059c48)
 function void UpdateLevelScrolling.LRZ_Boss()
 {
+	u8 lavaOverride = level.scrolling_routine == 0x04
+	
 	base.UpdateLevelScrolling.LRZ_Boss()
 
-	if (level.scrolling_routine != 0x0c)
+	if (level.scrolling_routine != 0x0c || lavaOverride)
 	{
 		for (u16 i = 0; i < 6; i++)
 		{
-			u16 renderQueue = 0x9c80
+			u16 renderQueue = 0x9e82
 			for (u16 j = 0; j < getScreenHeight(); ++j)
 			{
 				Renderer.setViewport(0, j, getScreenWidth(), 1, renderQueue)
