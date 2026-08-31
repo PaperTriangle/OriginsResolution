@@ -6,6 +6,7 @@ global s8 set_screen_size
 global u8 HUD_position
 global bool LRZ2_boss_lava_effect
 global bool LRZ2_boss_lava_surface
+global bool LRZ2_boss_lava_override
 
 include camera
 include credits

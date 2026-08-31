@@ -171,11 +171,23 @@
 				}
 			},
 			{
+				"InternalName": "LRZ2BossLavaOverride",
+				"DisplayName": "Custom Boss Lava Rendering",
+				"Variable": "LRZ2_boss_lava_override",
+				"DefaultValue": "1",
+			 	"Category": "LRZ2 Boss Lava Visuals",
+				"Options":
+				{
+					"0": "Disabled",
+					"1": "Enabled"
+				}
+			},
+			{
 				"InternalName": "LRZ2BossLavaEffect",
-				"DisplayName": "LRZ2 Boss Lava Heat Effect",
+				"DisplayName": "Boss Lava Heat Effect",
 				"Variable": "LRZ2_boss_lava_effect",
 				"DefaultValue": "0",
-			 	"Category": "LRZ2 Boss Visuals",
+			 	"Category": "LRZ2 Boss Lava Visuals",
 				"Options":
 				{
 					"0": "Origins (Not Animated)",
@@ -184,10 +196,10 @@
 			},
 			{
 				"InternalName": "LRZ2BossLavaSurface",
-				"DisplayName": "LRZ2 Boss Lava Surface",
+				"DisplayName": "Boss Lava Surface Slant",
 				"Variable": "LRZ2_boss_lava_surface",
 				"DefaultValue": "1",
-			 	"Category": "LRZ2 Boss Visuals",
+			 	"Category": "LRZ2 Boss Lava Visuals",
 				"Options":
 				{
 					"0": "Mega Drive / Genesis",
